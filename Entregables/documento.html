@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Actividad 3.1 – Modelado de la Base de Datos</title>
+<style>
+  @page {
+    size: A4;
+    margin: 2.2cm 2cm;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  header {
+    text-align: center;
+    border-bottom: 2px solid #2c5f8a;
+    padding-bottom: 14px;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 17pt;
+    color: #2c5f8a;
+    margin: 0 0 4px 0;
+  }
+  .subtitulo {
+    font-size: 12.5pt;
+    color: #444;
+    margin: 0;
+  }
+  .meta {
+    font-size: 10pt;
+    color: #666;
+    margin-top: 8px;
+  }
+  h2 {
+    font-size: 13pt;
+    color: #2c5f8a;
+    border-bottom: 1px solid #c9d8e4;
+    padding-bottom: 3px;
+    margin-top: 26px;
+    margin-bottom: 10px;
+  }
+  h3 {
+    font-size: 11.5pt;
+    color: #333;
+    margin-top: 16px;
+    margin-bottom: 6px;
+  }
+  p { margin: 6px 0 10px 0; text-align: justify; }
+  ul { margin: 6px 0 12px 0; padding-left: 22px; }
+  li { margin-bottom: 5px; text-align: justify; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 9.5pt;
+    margin: 10px 0 14px 0;
+  }
+  th, td {
+    border: 1px solid #b8c7d4;
+    padding: 5px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #e8f0f7; color: #2c5f8a; }
+  code {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 9.5pt;
+    background: #f2f5f8;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+  .diagrama {
+    text-align: center;
+    margin: 14px 0;
+  }
+  .diagrama img {
+    max-width: 100%;
+    border: 1px solid #ccc;
+    padding: 6px;
+    background: #fff;
+  }
+  .diagrama .pie {
+    font-size: 9.5pt;
+    color: #666;
+    margin-top: 6px;
+    font-style: italic;
+  }
+  .salto { page-break-before: always; }
+  section { page-break-inside: avoid; }
+  section.fluida { page-break-inside: auto; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Actividad 3.1 – Modelado de la Base de Datos</h1>
+  <p class="subtitulo">Sistema de Análisis de Opiniones de Clientes</p>
+  <p class="meta">Base de datos: <code>SistemaOpiniones_Analitica</code> &nbsp;|&nbsp; Motor: Microsoft SQL Server</p>
+</header>
+
+<section class="fluida">
+  <h2>1. Objetivo</h2>
+  <p>
+    Diseñar la base de datos analítica destino del proceso ETL que consolida las opiniones de
+    clientes de una empresa de comercio electrónico, recopiladas desde tres canales distintos:
+    encuestas internas de satisfacción (archivos CSV), reseñas publicadas en el sitio web
+    (base de datos relacional) y comentarios de usuarios en redes sociales (API REST).
+  </p>
+  <p>
+    El modelo permite responder los indicadores clave del análisis: total de comentarios por
+    periodo o producto, clasificación de opiniones (positiva, negativa o neutra), porcentaje de
+    satisfacción por producto y tendencias de opinión a lo largo del tiempo.
+  </p>
+</section>
+
+<section>
+  <h2>2. Diagrama Entidad–Relación (DER)</h2>
+  <div class="diagrama">
+    <img src="Screenshot_6.png" alt="Diagrama Entidad-Relación de SistemaOpiniones_Analitica">
+    <p class="pie">Diagrama de la base de datos generado en SQL Server Management Studio.</p>
+  </div>
+</section>
+
+<section class="fluida">
+  <h2>3. Estructura elegida: modelo tipo estrella</h2>
+  <p>
+    Se optó por un <strong>esquema en estrella</strong>, con una tabla de hechos central y
+    dimensiones a su alrededor:
+  </p>
+  <ul>
+    <li><strong>Tabla de hechos: <code>Opinion</code>.</strong> Cada fila es una opinión individual
+        procesada por el ETL, sin importar el canal de origen. Contiene las medidas del análisis
+        (<code>PuntajeSatisfaccion</code>, conteo de filas) y las claves foráneas hacia las dimensiones.</li>
+    <li><strong>Dimensiones: <code>Cliente</code>, <code>Producto</code>, <code>FuenteDatos</code>,
+        <code>Clasificacion</code>.</strong> Describen el "quién, qué, de dónde y cómo se clasificó"
+        cada opinión.</li>
+    <li><strong>Sub-dimensiones: <code>Categoria</code> y <code>TipoFuente</code>.</strong> Normalizan
+        atributos que se repiten en <code>Producto</code> y <code>FuenteDatos</code> respectivamente.</li>
+  </ul>
+
+  <h3>¿Por qué una sola tabla de hechos para los tres canales?</h3>
+  <p>
+    Las tres fuentes (encuestas, reseñas web, comentarios sociales) describen el mismo hecho de
+    negocio: <em>un cliente opinó sobre un producto en una fecha, con cierto tono y cierto puntaje</em>.
+    Unificarlas en <code>Opinion</code> permite comparar canales con una sola consulta
+    (<code>GROUP BY</code> sobre la fuente) en lugar de unir tres tablas heterogéneas, calcular
+    indicadores globales sin duplicar lógica, y que el ETL trate cada canal como un flujo más que
+    desemboca en el mismo destino. La dimensión <code>FuenteDatos</code> → <code>TipoFuente</code>
+    conserva la trazabilidad de qué canal y qué lote de carga produjo cada fila.
+  </p>
+
+  <h3>Dimensión tiempo</h3>
+  <p>
+    La fecha se almacena directamente como columna <code>Fecha</code> (tipo <code>DATE</code>) en la
+    tabla de hechos, en lugar de una dimensión calendario separada. Para el alcance de esta práctica,
+    las funciones de fecha de SQL Server (<code>YEAR</code>, <code>MONTH</code>,
+    <code>DATEPART(QUARTER, ...)</code>) cubren todos los análisis por periodo requeridos sin el costo
+    de poblar y mantener una tabla <code>DimFecha</code>. Si el volumen o la complejidad del análisis
+    creciera, agregar una dimensión calendario sería una extensión natural del modelo.
+  </p>
+</section>
+
+<section class="fluida salto">
+  <h2>4. Entidades, claves y relaciones</h2>
+  <table>
+    <tr>
+      <th>Tabla</th><th>Clave primaria</th><th>Tipo de PK</th><th>Claves foráneas</th>
+    </tr>
+    <tr><td><code>Categoria</code></td><td><code>IdCategoria</code></td><td><code>INT IDENTITY</code> (surrogate)</td><td>—</td></tr>
+    <tr><td><code>TipoFuente</code></td><td><code>IdTipoFuente</code></td><td><code>INT IDENTITY</code> (surrogate)</td><td>—</td></tr>
+    <tr><td><code>Clasificacion</code></td><td><code>IdClasificacion</code></td><td><code>INT IDENTITY</code> (surrogate)</td><td>—</td></tr>
+    <tr><td><code>Cliente</code></td><td><code>IdCliente</code></td><td><code>INT</code> (natural, del origen)</td><td>—</td></tr>
+    <tr><td><code>Producto</code></td><td><code>IdProducto</code></td><td><code>INT</code> (natural, del origen)</td><td><code>IdCategoria → Categoria</code></td></tr>
+    <tr><td><code>FuenteDatos</code></td><td><code>IdFuente</code></td><td><code>NVARCHAR(10)</code> (natural, ej. "F001")</td><td><code>IdTipoFuente → TipoFuente</code></td></tr>
+    <tr><td><code>Opinion</code></td><td><code>IdOpinion</code></td><td><code>INT IDENTITY</code> (surrogate)</td>
+        <td><code>IdCliente → Cliente</code><br><code>IdProducto → Producto</code><br><code>IdFuente → FuenteDatos</code><br><code>IdClasificacion → Clasificacion</code></td></tr>
+  </table>
+
+  <h3>Decisiones sobre las claves</h3>
+  <ul>
+    <li><strong>Claves naturales en <code>Cliente</code> y <code>Producto</code>.</strong> Los sistemas
+        origen ya identifican a clientes y productos con códigos ("C019", "P003"). El ETL extrae la
+        parte numérica y la usa como PK, lo que permite resolver las referencias de las opiniones de
+        cualquier canal sin tablas de mapeo intermedias.</li>
+    <li><strong>Claves surrogate (<code>IDENTITY</code>) en los catálogos y en <code>Opinion</code>.</strong>
+        Los catálogos se derivan de valores de texto encontrados en los archivos (nombres de categoría,
+        tipos de fuente, etiquetas de sentimiento); la identidad la genera la base. En <code>Opinion</code>,
+        ninguna combinación de columnas es única por naturaleza (un mismo cliente puede opinar dos veces
+        del mismo producto el mismo día), así que se usa un autonumérico.</li>
+    <li><strong>FKs opcionales (<code>NULL</code>) en la tabla de hechos.</strong> No todos los canales
+        aportan todos los datos: un comentario de red social puede ser de un usuario que no es cliente
+        registrado, o referir a un producto no catalogado. Hacer las FKs opcionales permite conservar la
+        opinión (cuenta para los totales y el análisis de sentimiento) sin violar la integridad
+        referencial. El ETL valida cada referencia contra la dimensión y la deja en <code>NULL</code>
+        cuando no existe.</li>
+  </ul>
+
+  <h3>Integridad referencial</h3>
+  <p>Todas las relaciones están materializadas como restricciones <code>FOREIGN KEY</code>:</p>
+  <ul>
+    <li><code>Producto.IdCategoria → Categoria</code> (obligatoria: todo producto tiene categoría).</li>
+    <li><code>FuenteDatos.IdTipoFuente → TipoFuente</code> (obligatoria: toda fuente tiene un tipo).</li>
+    <li><code>Opinion.{IdCliente, IdProducto, IdFuente, IdClasificacion}</code> → sus dimensiones
+        (opcionales, por lo explicado arriba).</li>
+  </ul>
+</section>
+
+<section class="fluida">
+  <h2>5. Normalización</h2>
+  <ul>
+    <li>Las dimensiones están en <strong>3FN</strong>: cada atributo depende solo de su clave
+        (<code>Nombre</code> y <code>Email</code> de <code>Cliente</code>; <code>Nombre</code> de
+        <code>Producto</code>, etc.).</li>
+    <li>Los valores repetitivos de texto se extrajeron a catálogos con <strong>restricción de
+        unicidad</strong> (<code>UNIQUE</code> sobre <code>Nombre</code> en <code>Categoria</code>,
+        <code>TipoFuente</code> y <code>Clasificacion</code>), evitando redundancia y errores de tipeo:
+        la etiqueta "Positiva" existe una sola vez y las opiniones la referencian por Id.</li>
+    <li>Se aceptó un <strong>ligero copo de nieve</strong> (<code>Producto → Categoria</code> y
+        <code>FuenteDatos → TipoFuente</code>) en lugar de desnormalizar la categoría y el tipo dentro
+        de las dimensiones. Con catálogos tan pequeños, el costo del JOIN adicional es despreciable y
+        se gana consistencia.</li>
+    <li>La tabla de hechos, en cambio, sigue el criterio dimensional clásico: solo claves foráneas y
+        medidas, sin atributos descriptivos duplicados.</li>
+  </ul>
+</section>
+
+<section class="fluida salto">
+  <h2>6. Criterios de análisis: cómo responde el modelo a las preguntas</h2>
+  <table>
+    <tr><th>Pregunta de análisis</th><th>Cómo la resuelve el modelo</th></tr>
+    <tr><td>Total de comentarios procesados</td><td><code>COUNT(*)</code> sobre <code>Opinion</code></td></tr>
+    <tr><td>Promedio de satisfacción general</td><td><code>AVG(PuntajeSatisfaccion)</code> sobre <code>Opinion</code></td></tr>
+    <tr><td>Comentarios por fuente / canal</td><td>JOIN <code>Opinion → FuenteDatos → TipoFuente</code>, <code>GROUP BY</code> tipo de fuente</td></tr>
+    <tr><td>% positivas / negativas / neutras</td><td>JOIN <code>Opinion → Clasificacion</code>, conteo por clasificación sobre el total</td></tr>
+    <tr><td>Producto con más comentarios / mejor calificado / más negativas</td><td>JOIN <code>Opinion → Producto</code>, <code>GROUP BY</code> con <code>COUNT</code> / <code>AVG</code> / filtro por clasificación</td></tr>
+    <tr><td>Satisfacción por producto en el tiempo</td><td><code>GROUP BY</code> producto, <code>YEAR(Fecha)</code>, <code>MONTH(Fecha)</code></td></tr>
+    <tr><td>Clientes que más opinan / patrones por segmento</td><td>JOIN <code>Opinion → Cliente</code>, <code>GROUP BY</code> cliente (extensible con atributos de segmento)</td></tr>
+    <tr><td>Tendencia mensual / trimestral</td><td><code>GROUP BY YEAR(Fecha), MONTH(Fecha)</code> o <code>DATEPART(QUARTER, Fecha)</code></td></tr>
+    <tr><td>Diferencia de tono entre canales</td><td><code>GROUP BY</code> tipo de fuente y clasificación</td></tr>
+  </table>
+</section>
+
+<section class="fluida">
+  <h2>7. Carga de datos (contexto del ETL)</h2>
+  <p>
+    El script SQL incluye también el procedimiento almacenado <code>dbo.usp_InsertOpinion</code>, que
+    el proceso ETL (aplicación de consola en .NET) utiliza para insertar las opiniones vía ADO.NET.
+    El flujo de carga respeta el orden de dependencias del modelo:
+  </p>
+  <ul>
+    <li><strong>Catálogos:</strong> <code>Categoria</code>, <code>TipoFuente</code>,
+        <code>Clasificacion</code> (valores únicos derivados de los archivos).</li>
+    <li><strong>Dimensiones:</strong> <code>Cliente</code>, <code>Producto</code>, <code>FuenteDatos</code>.</li>
+    <li><strong>Hechos:</strong> <code>Opinion</code>, unificando los tres canales; las filas cuya
+        referencia no se puede resolver conservan la FK en <code>NULL</code> y las que violan
+        restricciones se contabilizan como rechazadas.</li>
+  </ul>
+</section>
+
+</body>
+</html>
