@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 1060" width="960" height="1060" font-family="Segoe UI, Calibri, Arial, sans-serif">
+  <defs>
+    <marker id="f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a6f8f"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="1060" fill="#ffffff"/>
+
+  <text x="480" y="32" text-anchor="middle" font-size="19" font-weight="600" fill="#2c5f8a">Flujo del proceso de extracción</text>
+  <text x="480" y="53" text-anchor="middle" font-size="12.5" fill="#666">Una corrida del Worker Service, desde el arranque hasta el código de salida</text>
+
+  <!-- Inicio -->
+  <ellipse cx="480" cy="96" rx="82" ry="23" fill="#2c5f8a"/>
+  <text x="480" y="101" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">Inicio de la corrida</text>
+  <path d="M 480 119 L 480 140" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+
+  <!-- BatchId -->
+  <rect x="340" y="140" width="280" height="50" rx="6" fill="#e8f0f7" stroke="#2c5f8a" stroke-width="1.5"/>
+  <text x="480" y="161" text-anchor="middle" font-size="12" font-weight="600" fill="#1a3a52">Generar el BatchId del lote</text>
+  <text x="480" y="178" text-anchor="middle" font-size="9.5" fill="#4a6f8f">yyyyMMdd-HHmmss-xxxxxx</text>
+  <path d="M 480 190 L 480 212" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+
+  <!-- Decisión: fuentes habilitadas -->
+  <polygon points="480,212 632,254 480,296 328,254" fill="#fff6e5" stroke="#c98b23" stroke-width="1.5"/>
+  <text x="480" y="250" text-anchor="middle" font-size="11.5" font-weight="600" fill="#7a5410">¿Hay fuentes</text>
+  <text x="480" y="266" text-anchor="middle" font-size="11.5" font-weight="600" fill="#7a5410">habilitadas?</text>
+
+  <!-- Rama No -->
+  <path d="M 632 254 L 700 254" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+  <text x="662" y="246" text-anchor="middle" font-size="10" font-weight="600" fill="#c0392b">No</text>
+  <rect x="700" y="230" width="215" height="48" rx="6" fill="#f7e9e7" stroke="#c0392b" stroke-width="1.3"/>
+  <text x="807" y="250" text-anchor="middle" font-size="11" font-weight="600" fill="#8a2f24">Advertencia en el log:</text>
+  <text x="807" y="266" text-anchor="middle" font-size="10" fill="#a3564b">no hay nada que extraer</text>
+  <path d="M 915 254 L 937 254 L 937 1022 L 480 1022 L 480 1011" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+
+  <!-- Rama Sí -->
+  <text x="494" y="315" font-size="10" font-weight="600" fill="#3f7d54">Sí</text>
+  <path d="M 480 296 L 480 336" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+
+  <!-- Barra de bifurcación -->
+  <text x="150" y="332" font-size="10.5" font-style="italic" fill="#2c5f8a">Extracción en paralelo — Task.WhenAll</text>
+  <rect x="150" y="340" width="680" height="11" rx="4" fill="#2c5f8a"/>
+
+  <path d="M 190 351 L 190 380" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+  <path d="M 480 351 L 480 380" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+  <path d="M 770 351 L 770 380" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+
+  <!-- Fila 1: lectura por fuente -->
+  <rect x="70" y="380" width="240" height="52" rx="6" fill="#ffffff" stroke="#2c5f8a" stroke-width="1.5"/>
+  <text x="190" y="401" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1a3a52">CSV</text>
+  <text x="190" y="419" text-anchor="middle" font-size="10" fill="#4a6f8f">Leer el archivo con CsvHelper</text>
+
+  <rect x="360" y="380" width="240" height="52" rx="6" fill="#ffffff" stroke="#2c5f8a" stroke-width="1.5"/>
+  <text x="480" y="401" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1a3a52">Base de datos</text>
+  <text x="480" y="419" text-anchor="middle" font-size="10" fill="#4a6f8f">Abrir conexión y ejecutar la consulta</text>
+
+  <rect x="650" y="380" width="240" height="52" rx="6" fill="#ffffff" stroke="#2c5f8a" stroke-width="1.5"/>
+  <text x="770" y="401" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1a3a52">API REST</text>
+  <text x="770" y="419" text-anchor="middle" font-size="10" fill="#4a6f8f">Solicitar la página n</text>
+
+  <!-- Notas de manejo por fuente -->
+  <text x="190" y="450" text-anchor="middle" font-size="9.5" font-style="italic" fill="#a8802f">fila no convertible → se descarta,</text>
+  <text x="190" y="463" text-anchor="middle" font-size="9.5" font-style="italic" fill="#a8802f">se cuenta y la lectura sigue</text>
+
+  <text x="480" y="450" text-anchor="middle" font-size="9.5" font-style="italic" fill="#a8802f">consulta y tiempo de espera</text>
+  <text x="480" y="463" text-anchor="middle" font-size="9.5" font-style="italic" fill="#a8802f">definidos en configuración</text>
+
+  <text x="770" y="450" text-anchor="middle" font-size="9.5" font-style="italic" fill="#a8802f">408/429/5xx o timeout → backoff</text>
+  <text x="770" y="463" text-anchor="middle" font-size="9.5" font-style="italic" fill="#a8802f">exponencial y reintento</text>
+
+  <path d="M 190 470 L 190 492" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+  <path d="M 480 470 L 480 492" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+  <path d="M 770 470 L 770 492" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+
+  <!-- Fila 2: mapeo -->
+  <rect x="70" y="492" width="240" height="50" rx="6" fill="#e8f0f7" stroke="#2c5f8a" stroke-width="1.3"/>
+  <text x="190" y="513" text-anchor="middle" font-size="11" font-weight="600" fill="#1a3a52">Mapear a RawOpinion</text>
+  <text x="190" y="530" text-anchor="middle" font-size="9.5" fill="#4a6f8f">todo como texto, sin convertir</text>
+
+  <rect x="360" y="492" width="240" height="50" rx="6" fill="#e8f0f7" stroke="#2c5f8a" stroke-width="1.3"/>
+  <text x="480" y="513" text-anchor="middle" font-size="11" font-weight="600" fill="#1a3a52">Mapear a RawOpinion</text>
+  <text x="480" y="530" text-anchor="middle" font-size="9.5" fill="#4a6f8f">todo como texto, sin convertir</text>
+
+  <rect x="650" y="492" width="240" height="50" rx="6" fill="#e8f0f7" stroke="#2c5f8a" stroke-width="1.3"/>
+  <text x="770" y="513" text-anchor="middle" font-size="11" font-weight="600" fill="#1a3a52">Mapear a RawOpinion</text>
+  <text x="770" y="530" text-anchor="middle" font-size="9.5" fill="#4a6f8f">+ conservar el JSON original</text>
+
+  <path d="M 190 542 L 190 566" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+  <path d="M 480 542 L 480 566" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+  <path d="M 770 542 L 770 566" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+
+  <!-- Fila 3: escritura en staging -->
+  <rect x="70" y="566" width="240" height="50" rx="6" fill="#fff6e5" stroke="#c98b23" stroke-width="1.5"/>
+  <text x="190" y="587" text-anchor="middle" font-size="11" font-weight="600" fill="#7a5410">Escribir en staging</text>
+  <text x="190" y="604" text-anchor="middle" font-size="9.5" fill="#a8802f">en streaming, por lotes</text>
+
+  <rect x="360" y="566" width="240" height="50" rx="6" fill="#fff6e5" stroke="#c98b23" stroke-width="1.5"/>
+  <text x="480" y="587" text-anchor="middle" font-size="11" font-weight="600" fill="#7a5410">Escribir en staging</text>
+  <text x="480" y="604" text-anchor="middle" font-size="9.5" fill="#a8802f">en streaming, por lotes</text>
+
+  <rect x="650" y="566" width="240" height="50" rx="6" fill="#fff6e5" stroke="#c98b23" stroke-width="1.5"/>
+  <text x="770" y="587" text-anchor="middle" font-size="11" font-weight="600" fill="#7a5410">Escribir en staging</text>
+  <text x="770" y="604" text-anchor="middle" font-size="9.5" fill="#a8802f">en streaming, por lotes</text>
+
+  <path d="M 190 616 L 190 690" fill="none" stroke="#4a6f8f" stroke-width="1.6"/>
+  <path d="M 480 616 L 480 690" fill="none" stroke="#4a6f8f" stroke-width="1.6"/>
+  <path d="M 770 616 L 770 690" fill="none" stroke="#4a6f8f" stroke-width="1.6"/>
+
+  <!-- Barra de unión -->
+  <rect x="150" y="690" width="680" height="11" rx="4" fill="#2c5f8a"/>
+  <text x="830" y="684" font-size="10.5" font-style="italic" fill="#2c5f8a" text-anchor="end">Esperar a que todas terminen</text>
+  <path d="M 480 701 L 480 726" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+
+  <!-- Nota de aislamiento de fallos -->
+  <rect x="52" y="722" width="254" height="66" rx="6" fill="#f7e9e7" stroke="#c0392b" stroke-width="1.2" stroke-dasharray="5 3"/>
+  <text x="179" y="742" text-anchor="middle" font-size="10" fill="#8a2f24">Si una fuente lanza una excepción</text>
+  <text x="179" y="756" text-anchor="middle" font-size="10" fill="#8a2f24">se captura solo en su rama: se registra</text>
+  <text x="179" y="770" text-anchor="middle" font-size="10" fill="#8a2f24">el error, se marca como fallida</text>
+  <text x="179" y="784" text-anchor="middle" font-size="10" fill="#8a2f24">y las demás continúan.</text>
+
+  <!-- Resumen -->
+  <rect x="320" y="726" width="320" height="56" rx="6" fill="#e8f0f7" stroke="#2c5f8a" stroke-width="1.5"/>
+  <text x="480" y="748" text-anchor="middle" font-size="12" font-weight="600" fill="#1a3a52">Reportar el resumen del lote</text>
+  <text x="480" y="765" text-anchor="middle" font-size="9.5" fill="#4a6f8f">extraídos · descartados · ms por fuente</text>
+  <text x="480" y="778" text-anchor="middle" font-size="9.5" fill="#4a6f8f">y ahorro obtenido por el paralelismo</text>
+  <path d="M 480 782 L 480 802" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+
+  <!-- Decisión final -->
+  <polygon points="480,802 645,844 480,886 315,844" fill="#fff6e5" stroke="#c98b23" stroke-width="1.5"/>
+  <text x="480" y="840" text-anchor="middle" font-size="11.5" font-weight="600" fill="#7a5410">¿Alguna fuente</text>
+  <text x="480" y="856" text-anchor="middle" font-size="11.5" font-weight="600" fill="#7a5410">terminó con error?</text>
+
+  <path d="M 315 844 L 205 844 L 205 900" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+  <text x="278" y="836" text-anchor="middle" font-size="10" font-weight="600" fill="#c0392b">Sí</text>
+  <rect x="105" y="900" width="200" height="46" rx="6" fill="#f7e9e7" stroke="#c0392b" stroke-width="1.4"/>
+  <text x="205" y="921" text-anchor="middle" font-size="11.5" font-weight="600" fill="#8a2f24">Código de salida 1</text>
+  <text x="205" y="937" text-anchor="middle" font-size="9.5" fill="#a3564b">el job programado lo detecta</text>
+
+  <path d="M 645 844 L 755 844 L 755 900" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+  <text x="682" y="836" text-anchor="middle" font-size="10" font-weight="600" fill="#3f7d54">No</text>
+  <rect x="655" y="900" width="200" height="46" rx="6" fill="#e9f4ec" stroke="#3f7d54" stroke-width="1.4"/>
+  <text x="755" y="921" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1f4b2f">Código de salida 0</text>
+  <text x="755" y="937" text-anchor="middle" font-size="9.5" fill="#4a8560">corrida completada</text>
+
+  <!-- Fin -->
+  <path d="M 205 946 L 205 986 L 386 986" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+  <path d="M 755 946 L 755 986 L 574 986" fill="none" stroke="#4a6f8f" stroke-width="1.6" marker-end="url(#f)"/>
+  <ellipse cx="480" cy="986" rx="94" ry="23" fill="#2c5f8a"/>
+  <text x="480" y="991" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">Fin de la corrida</text>
+</svg>
