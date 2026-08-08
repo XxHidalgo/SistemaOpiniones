@@ -9,13 +9,12 @@ using var host = AppHost.CreateHost(args);
 using var scope = host.Services.CreateScope();
 var sp = scope.ServiceProvider;
 
-// 0) TEMPORAL: limpia las tablas para poder re-ejecutar durante las pruebas.
-//    >>> QUITAR esta sección (y el método LimpiarBaseDatos) cuando la carga esté lista. <<<
+// Limpia las tablas para poder re-ejecutar la carga completa.
 var db = sp.GetRequiredService<SistemaOpinionesContext>();
 await LimpiarBaseDatos(db);
 Console.WriteLine("Base de datos limpiada.\n");
 
-// 1) Catálogos (valores únicos, van primero por ser FK de los demás)
+// Catálogos primero, porque son FK de las demás tablas.
 var categoria = sp.GetRequiredService<ICategoriaService>();
 await Ejecutar("Categoria", categoria.LoadCategoria, categoria.SaveCategoria);
 
@@ -25,7 +24,6 @@ await Ejecutar("TipoFuente", tipoFuente.LoadTipoFuente, tipoFuente.SaveTipoFuent
 var clasificacion = sp.GetRequiredService<IClasificacionService>();
 await Ejecutar("Clasificacion", clasificacion.LoadClasificacion, clasificacion.SaveClasificacion);
 
-// 2) Entidades principales
 var cliente = sp.GetRequiredService<IClienteService>();
 await Ejecutar("Cliente", cliente.LoadCliente, cliente.SaveCliente);
 
@@ -35,7 +33,7 @@ await Ejecutar("Producto", producto.LoadProducto, producto.SaveProducto);
 var fuenteDatos = sp.GetRequiredService<IFuenteDatosService>();
 await Ejecutar("FuenteDatos", fuenteDatos.LoadFuenteDatos, fuenteDatos.SaveFuenteDatos);
 
-// 3) Opiniones (3 fuentes -> misma tabla Opinion)
+// Las 3 fuentes de opiniones van a la misma tabla Opinion.
 var social = sp.GetRequiredService<ISocialCommentService>();
 await Ejecutar("Opinion (Social)", social.LoadSocialComment, social.SaveSocialComment);
 
@@ -45,7 +43,6 @@ await Ejecutar("Opinion (Web)", web.LoadWebReview, web.SaveWebReview);
 var survey = sp.GetRequiredService<ISurveyService>();
 await Ejecutar("Opinion (Survey)", survey.LoadSurvey, survey.SaveSurvey);
 
-// ---- helpers ----
 static async Task LimpiarBaseDatos(SistemaOpinionesContext db)
 {
     await db.Database.ExecuteSqlRawAsync(@"

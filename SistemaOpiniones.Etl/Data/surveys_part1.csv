@@ -1,0 +1,41 @@
+IdOpinion,IdCliente,IdProducto,Fecha,Comentario,Clasificación,PuntajeSatisfacción,Fuente
+1,7,16,2025-01-10,"El proceso de compra fue muy sencillo, repetiría.",Positiva,5,Encuesta
+2,12,3,2025-01-11,"Tardaron en responder mis mensajes, pero resolvieron.",Neutra,3,Encuesta
+3,19,16,2025-01-15,"No quedé conforme con la atención recibida.",Negativa,2,Encuesta
+4,4,8,2025-01-19,"Todo perfecto, el pedido llegó a tiempo.",Positiva,5,Encuesta
+5,31,22,2025-01-23,"La plataforma es lenta en el móvil.",Negativa,2,Encuesta
+6,7,8,2025-01-28,"Cumple, sin más.",Neutra,3,Encuesta
+7,45,3,2025-02-01,"Muy buena experiencia en general.",Positiva,4,Encuesta
+8,12,30,2025-02-04,"Me encantó la variedad de productos.",Positiva,5,Encuesta
+9,28,22,2025-02-09,"El costo de envío me pareció excesivo.",Negativa,2,Encuesta
+10,33,8,2025-02-13,"Buen servicio, volvería a comprar.",Positiva,4,Encuesta
+11,19,30,2025-02-17,"Hubo un error en mi factura que tomó días corregir.",Negativa,1,Encuesta
+12,50,3,2025-02-21,"Normal, nada que destacar.",Neutra,3,Encuesta
+13,4,22,2025-02-25,"La devolución fue rápida y sin complicaciones.",Positiva,5,Encuesta
+14,45,16,2025-03-02,"Esperaba mejor calidad por el precio.",Negativa,2,Encuesta
+15,7,3,2025-03-06,"Atención al cliente excelente.",Positiva,5,Encuesta
+16,60,8,2025-03-10,"El seguimiento del pedido no se actualizaba.",Negativa,2,Encuesta
+17,12,16,2025-03-14,"Producto correcto, entrega puntual.",Positiva,4,Encuesta
+18,28,30,2025-03-18,"Regular. El empaque llegó abierto.",Neutra,3,Encuesta
+19,33,22,2025-03-22,"Recomiendo la tienda sin dudarlo.",Positiva,5,Encuesta
+20,50,8,2025-03-26,"Me cobraron dos veces el mismo pedido.",Negativa,1,Encuesta
+21,19,3,2025-03-30,"Sencillo y rápido.",Positiva,4,Encuesta
+22,4,16,2025-04-03,"El catálogo podría estar mejor organizado.",Neutra,3,Encuesta
+23,45,30,2025-04-07,"Excelente atención postventa.",Positiva,5,Encuesta
+24,7,22,2025-04-11,"No volvería a comprar aquí.",Negativa,1,Encuesta
+25,31,8,2025-04-15,"Buena relación calidad-precio.",Positiva,4,Encuesta
+26,12,3,2025-04-19,"Todo bien salvo la demora inicial.",Neutra,3,Encuesta
+27,28,16,2025-04-23,"El producto no coincidía con la descripción.",Negativa,2,Encuesta
+28,33,30,2025-04-27,"Muy satisfecho con la compra.",Positiva,5,Encuesta
+29,50,22,2025-05-01,"Servicio aceptable.",Neutra,3,Encuesta
+30,60,3,2025-05-05,"La app se cierra sola al pagar.",Negativa,1,Encuesta
+31,4,8,2025-05-09,"Rápido y confiable.",Positiva,5,Encuesta
+32,19,16,2025-05-13,"Faltó información sobre la garantía.",Neutra,3,Encuesta
+33,45,22,2025-05-17,"Cumplieron con todo lo prometido.",Positiva,4,Encuesta
+34,7,30,2025-05-21,"Mala experiencia con el repartidor.",Negativa,2,Encuesta
+35,31,3,2025-05-25,"Todo excelente.",Positiva,5,Encuesta
+36,C012,16,2025-05-29,"Fila con IdCliente no numérico: la extracción la descarta y sigue.",Neutra,3,Encuesta
+37,28,8,2025-06-02,"Buena atención en el chat de soporte.",Positiva,4,Encuesta
+38,33,22,2025-06-06,"Fila incompleta a propósito"
+39,50,30,2025-06-10,"El precio subió entre que lo vi y lo compré.",Negativa,2,Encuesta
+40,12,16,2025-06-14,"Compra sin inconvenientes.",Positiva,4,Encuesta
