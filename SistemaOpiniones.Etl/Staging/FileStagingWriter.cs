@@ -7,16 +7,7 @@ using SistemaOpiniones.Etl.Models;
 
 namespace SistemaOpiniones.Etl.Staging;
 
-/// <summary>
-/// Aterriza lo extraído en archivos NDJSON (un objeto JSON por línea), uno por fuente y
-/// por lote: <c>output/staging/{batchId}/{fuente}.ndjson</c>.
-///
-/// El formato por líneas permite escribir en streaming y volver a leer el archivo sin
-/// cargarlo entero, a diferencia de un único arreglo JSON.
-///
-/// Es el destino por defecto porque no depende de que haya un servidor de base de datos
-/// disponible: el proceso de extracción se puede ejecutar y evidenciar por sí solo.
-/// </summary>
+// Guarda lo extraído en archivos NDJSON: output/staging/{batchId}/{fuente}.ndjson
 public sealed class FileStagingWriter : IStagingWriter
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -59,8 +50,6 @@ public sealed class FileStagingWriter : IStagingWriter
             await writer.WriteLineAsync(JsonSerializer.Serialize(record, SerializerOptions));
             written++;
 
-            // Se vacía el buffer por lotes en lugar de en cada línea: menos llamadas al
-            // sistema de archivos sin dejar de acotar la memoria.
             if (written % _options.BatchSize == 0)
             {
                 await writer.FlushAsync();

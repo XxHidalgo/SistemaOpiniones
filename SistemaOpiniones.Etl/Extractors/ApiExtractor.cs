@@ -8,16 +8,7 @@ using SistemaOpiniones.Etl.Models;
 
 namespace SistemaOpiniones.Etl.Extractors;
 
-/// <summary>
-/// Extrae los comentarios de redes sociales consumiendo una API REST.
-///
-/// El HttpClient se obtiene de <see cref="IHttpClientFactory"/>, que reutiliza y recicla
-/// los handlers: evita el agotamiento de sockets y el problema del DNS obsoleto que tiene
-/// instanciar HttpClient a mano.
-///
-/// El mapeo JSON → <see cref="RawOpinion"/> es dirigido por configuración (FieldMap), así
-/// que cambiar de proveedor o absorber un cambio de contrato no requiere recompilar.
-/// </summary>
+// Extrae los comentarios de redes sociales consumiendo la API REST con paginación.
 public sealed class ApiExtractor : IExtractor
 {
     public const string HttpClientName = "OpinionesApi";
@@ -77,7 +68,7 @@ public sealed class ApiExtractor : IExtractor
 
             _logger.LogDebug("Página {Page} de {Source}: {Count} elementos", page, SourceName, countInPage);
 
-            // Página incompleta = última página. Evita una llamada extra innecesaria.
+            // Página incompleta = última página.
             if (countInPage < _options.PageSize)
                 yield break;
         }
@@ -87,10 +78,7 @@ public sealed class ApiExtractor : IExtractor
             _options.MaxPages, SourceName);
     }
 
-    /// <summary>
-    /// Pide una página con reintentos y backoff exponencial ante fallos transitorios.
-    /// Un 404 o un 401 no se reintentan: no se arreglan esperando.
-    /// </summary>
+    // Pide una página con reintentos ante fallos transitorios.
     private async Task<JsonDocument> FetchPageAsync(HttpClient client, int page, CancellationToken cancellationToken)
     {
         var url = BuildUrl(page);
@@ -158,7 +146,6 @@ public sealed class ApiExtractor : IExtractor
                $"{Uri.EscapeDataString(_options.PageSizeParamName)}={_options.PageSize}";
     }
 
-    /// <summary>Ubica el arreglo de resultados: la raíz misma, o la propiedad envolvente configurada.</summary>
     private JsonElement ResolveResultsArray(JsonElement root)
     {
         if (root.ValueKind == JsonValueKind.Array)
@@ -195,9 +182,6 @@ public sealed class ApiExtractor : IExtractor
             Puntaje = ReadMapped(element, nameof(RawOpinion.Puntaje)),
             Clasificacion = ReadMapped(element, nameof(RawOpinion.Clasificacion)),
             ExtractedAtUtc = context.StartedAtUtc,
-
-            // Se conserva el JSON original: si mañana el mapeo resulta incompleto,
-            // el dato sigue estando en staging y no hay que volver a llamar la API.
             RawPayload = element.GetRawText()
         };
     }
@@ -218,7 +202,6 @@ public sealed class ApiExtractor : IExtractor
         };
     }
 
-    /// <summary>Busca la propiedad respetando mayúsculas primero y sin distinguirlas después.</summary>
     private static bool TryGetProperty(JsonElement element, string name, out JsonElement value)
     {
         if (element.TryGetProperty(name, out value))

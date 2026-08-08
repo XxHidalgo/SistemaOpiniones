@@ -4,16 +4,7 @@ using SistemaOpiniones.Etl.Services;
 
 namespace SistemaOpiniones.Etl;
 
-/// <summary>
-/// Servicio en segundo plano que hospeda el proceso de extracción.
-///
-/// Según configuración corre una sola vez y termina (útil para ejecutarlo desde el
-/// Programador de tareas o un job de CI) o queda en ciclo con un intervalo fijo, que es
-/// el modo de servicio permanente.
-///
-/// Cada corrida se resuelve en su propio ámbito de inyección de dependencias, para que
-/// las conexiones y los extractores no sobrevivan entre ejecuciones.
-/// </summary>
+// Servicio en segundo plano que ejecuta la extracción, una sola vez o en ciclo.
 public sealed class Worker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
@@ -64,9 +55,6 @@ public sealed class Worker : BackgroundService
         }
         catch (Exception ex)
         {
-            // Falla que ningún extractor pudo absorber (configuración inválida, destino de
-            // staging inaccesible). Se marca el proceso como fallido para que quien lo
-            // programe se entere.
             _logger.LogCritical(ex, "El servicio ETL terminó de forma inesperada.");
             Environment.ExitCode = 1;
         }

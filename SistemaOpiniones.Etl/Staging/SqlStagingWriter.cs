@@ -7,15 +7,7 @@ using SistemaOpiniones.Etl.Models;
 
 namespace SistemaOpiniones.Etl.Staging;
 
-/// <summary>
-/// Aterriza lo extraído en la tabla staging mediante <see cref="SqlBulkCopy"/>.
-///
-/// Rendimiento: la carga masiva envía los registros en lotes por el protocolo TDS en vez
-/// de emitir un INSERT por fila, que es la diferencia entre segundos y minutos cuando el
-/// volumen crece. Los registros se acumulan en un <see cref="DataTable"/> del tamaño del
-/// lote configurado y se vuelca; la memoria queda acotada sin importar cuántas filas
-/// entregue la fuente.
-/// </summary>
+// Guarda lo extraído en la tabla staging con SqlBulkCopy por lotes.
 public sealed class SqlStagingWriter : IStagingWriter
 {
     private readonly StagingOptions _options;
@@ -92,10 +84,7 @@ public sealed class SqlStagingWriter : IStagingWriter
         return count;
     }
 
-    /// <summary>
-    /// El esquema debe coincidir en nombre con las columnas de la tabla staging
-    /// (ver Sql/01_Staging_Schema.sql). IdStaging es IDENTITY y no se envía.
-    /// </summary>
+    // Debe coincidir con las columnas de dbo.Stg_Opinion (IdStaging es IDENTITY, no se envía).
     private static DataTable CreateTable()
     {
         var table = new DataTable();

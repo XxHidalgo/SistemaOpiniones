@@ -11,15 +11,7 @@ using SistemaOpiniones.Etl.Models;
 
 namespace SistemaOpiniones.Etl.Extractors;
 
-/// <summary>
-/// Extrae las encuestas internas de satisfacción desde archivo CSV usando CsvHelper.
-///
-/// Reutiliza <see cref="SurveyDto"/> de la capa de datos, que ya declara el mapeo de las
-/// cabeceras con tilde ("Clasificación", "PuntajeSatisfacción") mediante atributos.
-///
-/// Una fila corrupta no aborta la extracción: los callbacks de CsvHelper la registran
-/// como rechazada, la saltan y el archivo se sigue leyendo.
-/// </summary>
+// Extrae las encuestas internas desde el archivo CSV con CsvHelper.
 public sealed class CsvExtractor : IExtractor
 {
     private readonly CsvSourceOptions _options;
@@ -57,8 +49,6 @@ public sealed class CsvExtractor : IExtractor
             Delimiter = _options.Delimiter,
             TrimOptions = TrimOptions.Trim,
             DetectColumnCountChanges = true,
-
-            // Un campo ausente deja la propiedad en su valor por defecto en lugar de romper.
             MissingFieldFound = null,
 
             BadDataFound = args =>
@@ -66,12 +56,7 @@ public sealed class CsvExtractor : IExtractor
                     "Dato mal formado en la fila {Row} de {Source}: {Field}",
                     args.Context.Parser?.Row, SourceName, args.Field),
 
-            // Devolver false evita que la excepción aborte la lectura.
-            //
-            // Solo el fallo de conversión de tipo descarta realmente el registro; el cambio
-            // en el número de columnas CsvHelper lo reporta pero igual entrega la fila, así
-            // que se registra como advertencia y no se cuenta como descarte. De lo contrario
-            // los totales del reporte no cuadrarían con las filas del archivo.
+            // Una fila mala se registra y se salta, no aborta la lectura.
             ReadingExceptionOccurred = args =>
             {
                 var row = args.Exception.Context?.Parser?.Row;

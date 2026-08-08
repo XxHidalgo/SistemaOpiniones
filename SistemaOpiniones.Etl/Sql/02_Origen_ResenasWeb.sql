@@ -1,13 +1,5 @@
-/* ============================================================================
-   Base de datos de ORIGEN: reseñas del sitio web
-   Base de datos: SistemaOpiniones_Origen
-
-   Representa el sistema transaccional del sitio de comercio electrónico, que es
-   la fuente relacional del ETL. Es una base distinta de la analítica a propósito:
-   el proceso de extracción debe leer de un sistema externo, no de su propio destino.
-
-   Ejecutar este script antes de habilitar la fuente Etl:Sources:Database.
-   ============================================================================ */
+-- BD de origen con las reseñas del sitio web (fuente relacional del ETL).
+-- Ejecutar antes de habilitar la fuente Etl:Sources:Database.
 
 IF DB_ID('SistemaOpiniones_Origen') IS NULL
     CREATE DATABASE SistemaOpiniones_Origen;
@@ -20,8 +12,7 @@ IF OBJECT_ID('dbo.WebReview', 'U') IS NOT NULL
     DROP TABLE dbo.WebReview;
 GO
 
-/* Mismo esquema que trae el archivo web_reviews.csv:
-   IdReview, IdCliente, IdProducto, Fecha, Comentario, Rating */
+-- Mismo esquema que web_reviews.csv
 CREATE TABLE dbo.WebReview
 (
     IdReview   NVARCHAR(20)   NOT NULL,
@@ -35,18 +26,10 @@ CREATE TABLE dbo.WebReview
 );
 GO
 
--- Índice por fecha: soporta la extracción incremental (ver nota al final).
 CREATE INDEX IX_WebReview_Fecha ON dbo.WebReview (Fecha);
 GO
 
-/* ----------------------------------------------------------------------------
-   Datos de muestra para poder ejecutar y evidenciar la extracción.
-   Sustituir por la carga real de web_reviews.csv cuando esté disponible:
-
-   BULK INSERT dbo.WebReview
-   FROM 'C:\ruta\web_reviews.csv'
-   WITH (FIRSTROW = 2, FIELDTERMINATOR = ',', ROWTERMINATOR = '0x0a', CODEPAGE = '65001');
-   ---------------------------------------------------------------------------- */
+-- Datos de muestra para probar la extracción.
 INSERT INTO dbo.WebReview (IdReview, IdCliente, IdProducto, Fecha, Comentario, Rating)
 VALUES
     (N'R001', N'C007', N'P016', '2025-01-14', N'El producto llegó antes de lo esperado y en buen estado.', 5),
@@ -68,11 +51,3 @@ GO
 
 SELECT COUNT(*) AS ResenasCargadas FROM dbo.WebReview;
 GO
-
-/* ----------------------------------------------------------------------------
-   Extracción incremental (mejora para la fase de carga):
-   la consulta de Etl:Sources:Database:Query puede filtrar por fecha para no
-   releer todo el histórico en cada corrida, por ejemplo:
-
-     ... FROM dbo.WebReview WHERE Fecha >= @UltimaCarga
-   ---------------------------------------------------------------------------- */

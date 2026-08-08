@@ -5,17 +5,7 @@ using SistemaOpiniones.Etl.Configuration;
 
 namespace SistemaOpiniones.Etl.Services;
 
-/// <summary>
-/// Coordina una corrida de extracción: identifica el lote, lanza las fuentes habilitadas
-/// en paralelo, mide cada una y reporta el resumen.
-///
-/// No conoce ninguna fuente concreta: recibe <see cref="IExtractor"/> inyectados por el
-/// contenedor. Agregar un canal no modifica esta clase.
-///
-/// Aislamiento de fallos: cada fuente se extrae dentro de su propio try/catch, de modo
-/// que si la API está caída las encuestas y las reseñas igual se extraen y se reporta
-/// exactamente qué falló.
-/// </summary>
+// Lanza las fuentes habilitadas en paralelo y reporta el resumen del lote.
 public sealed class ExtractionOrchestrator
 {
     private readonly IReadOnlyList<IExtractor> _extractors;
@@ -82,8 +72,6 @@ public sealed class ExtractionOrchestrator
         if (gate is not null)
             await gate.WaitAsync(cancellationToken);
 
-        // Un contexto por fuente: comparten el lote, pero cada una lleva su propio conteo
-        // de descartes.
         var context = new ExtractionContext(batchId, startedAtUtc);
         var stopwatch = Stopwatch.StartNew();
 
@@ -124,8 +112,6 @@ public sealed class ExtractionOrchestrator
         {
             stopwatch.Stop();
 
-            // Se registra la excepción completa en el log y solo el mensaje en el resultado:
-            // el resumen queda legible y la traza sigue disponible para diagnóstico.
             _logger.LogError(
                 ex, "[{Source}] Falló la extracción tras {Elapsed} ms",
                 extractor.SourceName, stopwatch.ElapsedMilliseconds);

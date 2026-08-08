@@ -1,6 +1,6 @@
 namespace SistemaOpiniones.Etl.Abstractions;
 
-/// <summary>Resultado de extraer una fuente. Es lo que el orquestador reporta al final de la corrida.</summary>
+// Resultado de extraer una fuente; el orquestador lo usa para el resumen final.
 public sealed record ExtractionResult
 {
     public required string SourceName { get; init; }
@@ -9,10 +9,8 @@ public sealed record ExtractionResult
 
     public required bool Success { get; init; }
 
-    /// <summary>Registros efectivamente escritos en staging.</summary>
     public int Extracted { get; init; }
 
-    /// <summary>Registros que la fuente entregó pero que se descartaron por estar corruptos.</summary>
     public int Rejected { get; init; }
 
     public long ElapsedMs { get; init; }

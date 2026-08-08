@@ -1,12 +1,6 @@
 namespace SistemaOpiniones.Etl.Abstractions;
 
-/// <summary>
-/// Estado compartido de una corrida de extracción. Se crea uno por lote y se pasa a cada
-/// extractor, que lo usa para sellar los registros con el mismo <see cref="BatchId"/> y
-/// para contabilizar los descartes.
-///
-/// Los contadores usan operaciones atómicas porque las fuentes se extraen en paralelo.
-/// </summary>
+// Estado de una corrida: identifica el lote y cuenta los descartes de cada fuente.
 public sealed class ExtractionContext
 {
     private int _rejected;
@@ -21,7 +15,6 @@ public sealed class ExtractionContext
 
     public DateTime StartedAtUtc { get; }
 
-    /// <summary>Registros que la fuente entregó pero que no se pudieron leer (fila corrupta, tipo inválido).</summary>
     public int Rejected => Volatile.Read(ref _rejected);
 
     public void RegisterRejected() => Interlocked.Increment(ref _rejected);

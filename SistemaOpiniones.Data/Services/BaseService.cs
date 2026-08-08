@@ -21,7 +21,6 @@ public class BaseService<TDto, TEntity> : IBaseService<TDto, TEntity>
     private readonly OperationResult _operationResult;
     private List<TDto> _data;
 
-    /// <summary>Contexto EF disponible para los servicios derivados (ej. resolver FKs).</summary>
     protected SistemaOpinionesContext Context => _context;
 
     public BaseService(SistemaOpinionesContext context, IMapper mapper, string filePath)
@@ -77,13 +76,9 @@ public class BaseService<TDto, TEntity> : IBaseService<TDto, TEntity>
 
             List<TEntity> entities = _mapper.Map<List<TEntity>>(_data);
 
-            // Resuelve claves foráneas texto->Id (si el servicio lo necesita).
-            // Corre antes de deduplicar, así entities y _data siguen alineados por índice.
             await ResolveForeignKeysAsync(entities, _data);
 
-            // Elimina duplicados si el servicio define una clave
-            // (ej. categorías/tipos/clasificaciones que se repiten en el CSV).
-            // Se aplica antes del switch, así vale tanto para EF como para ADO.
+            // Elimina duplicados si el servicio define una clave.
             if (DistinctKey is not null)
                 entities = entities.DistinctBy(DistinctKey).ToList();
 
@@ -147,31 +142,21 @@ public class BaseService<TDto, TEntity> : IBaseService<TDto, TEntity>
             }
             catch
             {
-                // Fila rechazada (ej. viola FK o dato inválido): se cuenta y se continúa.
+                // Fila rechazada (viola FK o dato inválido), se continúa con la siguiente.
             }
         }
 
         return inserted;
     }
 
-    /// <summary>
-    /// Clave para eliminar duplicados antes de guardar. Si es null, no se deduplica.
-    /// Cada servicio la sobrescribe según su necesidad (ej. c => c.Nombre).
-    /// </summary>
+    // Clave para eliminar duplicados; null = no deduplicar.
     protected virtual Func<TEntity, object>? DistinctKey => null;
 
-    /// <summary>
-    /// Resuelve las claves foráneas que en el CSV vienen como texto (ej. nombre de
-    /// categoría -> IdCategoria). Recibe las entidades y los DTO alineados por índice.
-    /// Por defecto no hace nada; cada servicio lo sobrescribe si lo necesita.
-    /// </summary>
+    // Resuelve las FKs que vienen como texto en el CSV; cada servicio lo sobrescribe si lo necesita.
     protected virtual Task ResolveForeignKeysAsync(List<TEntity> entities, List<TDto> dtos)
         => Task.CompletedTask;
 
-    /// <summary>
-    /// Cada servicio que use ADO.NET sobrescribe este método para indicar el
-    /// procedimiento almacenado y sus parámetros para la entidad dada.
-    /// </summary>
+    // Procedimiento almacenado y parámetros para el guardado por ADO.NET.
     protected virtual (string ProcedureName, List<SqlParameter> Parameters) BuildInsertCommand(TEntity entity)
         => throw new NotImplementedException(
             $"El servicio de '{typeof(TEntity).Name}' no definió su procedimiento almacenado para ADO.NET.");

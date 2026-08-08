@@ -8,17 +8,7 @@ using SistemaOpiniones.Etl.Models;
 
 namespace SistemaOpiniones.Etl.Extractors;
 
-/// <summary>
-/// Extrae las reseñas del sitio web desde la base de datos relacional de origen.
-///
-/// La consulta vive en appsettings.json y debe exponer sus columnas con los alias que
-/// esperan los campos de <see cref="RawOpinion"/>. El lector resuelve los ordinales una
-/// sola vez y tolera columnas ausentes, de modo que un cambio menor en el origen no
-/// tumba la extracción.
-///
-/// Rendimiento: se usa un DataReader en modo streaming; las filas se ceden una a una y
-/// nunca se materializa el resultado completo en memoria.
-/// </summary>
+// Extrae las reseñas web desde la base de datos de origen con un DataReader.
 public sealed class DatabaseExtractor : IExtractor
 {
     private static readonly string[] Columns =
@@ -104,7 +94,6 @@ public sealed class DatabaseExtractor : IExtractor
         }
     }
 
-    /// <summary>Resuelve una sola vez la posición de cada columna esperada; -1 si no viene.</summary>
     private Dictionary<string, int> MapOrdinals(SqlDataReader reader)
     {
         var present = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -132,7 +121,6 @@ public sealed class DatabaseExtractor : IExtractor
         if (ordinal < 0 || reader.IsDBNull(ordinal))
             return null;
 
-        // Se convierte a texto sin interpretar: staging guarda el valor crudo.
         return reader.GetValue(ordinal) switch
         {
             DateTime date => date.ToString("yyyy-MM-dd"),
