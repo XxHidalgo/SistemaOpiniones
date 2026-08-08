@@ -10,11 +10,6 @@ sociales por API REST) en una base de datos analítica.
 - `SistemaOpiniones.Data` — modelo, DTOs, contexto EF Core y servicios de datos.
 - `SistemaOpiniones.Load` — consola que carga los CSV al modelo analítico.
 
-## Entregables
-
-Están en la carpeta [Entregables](Entregables): script de la base de datos,
-documento técnico de la extracción y los diagramas de arquitectura y de flujo.
-
 ## Cómo ejecutar
 
 ```bash
@@ -27,11 +22,11 @@ Por defecto corre una sola vez y el staging va a archivos NDJSON en
 
 ## Base de datos
 
-Ejecutar en orden en SQL Server:
+Ejecutar en orden en SQL Server (están en `SistemaOpiniones.Etl/Sql/`):
 
-1. `Entregables/01_Script_SistemaOpiniones_Analitica.sql` — modelo analítico.
-2. `SistemaOpiniones.Etl/Sql/01_Staging_Schema.sql` — tablas de staging.
-3. `SistemaOpiniones.Etl/Sql/02_Origen_ResenasWeb.sql` — base de origen de reseñas web.
+1. `00_Base_Analitica.sql` — modelo analítico.
+2. `01_Staging_Schema.sql` — tablas de staging.
+3. `02_Origen_ResenasWeb.sql` — base de origen de reseñas web.
 
 Para que el staging vaya a la base de datos en vez de archivos, cambiar
 `Etl:Staging:Mode` a `SqlServer` en `SistemaOpiniones.Etl/appsettings.json`.
