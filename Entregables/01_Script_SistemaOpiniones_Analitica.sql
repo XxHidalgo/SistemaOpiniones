@@ -111,3 +111,29 @@ BEGIN
          @Fecha, @Comentario, @PuntajeSatisfaccion);
 END
 GO
+
+CREATE PROCEDURE dbo.usp_InsertProducto
+    @IdProducto  INT,
+    @Nombre      NVARCHAR(100),
+    @IdCategoria INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO dbo.Producto (IdProducto, Nombre, IdCategoria)
+    VALUES (@IdProducto, @Nombre, @IdCategoria);
+END
+GO
+
+CREATE PROCEDURE dbo.usp_InsertFuenteDatos
+    @IdFuente     NVARCHAR(10),
+    @IdTipoFuente INT,
+    @FechaCarga   DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO dbo.FuenteDatos (IdFuente, IdTipoFuente, FechaCarga)
+    VALUES (@IdFuente, @IdTipoFuente, @FechaCarga);
+END
+GO
