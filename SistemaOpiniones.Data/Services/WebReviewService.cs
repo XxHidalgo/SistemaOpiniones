@@ -19,16 +19,26 @@ public class WebReviewService : BaseService<WebReviewDto, Opinion>, IWebReviewSe
     }
 
     // IdCliente/IdProducto vienen como texto ("C007", "P016"); se parsean y validan.
+    // Estas opiniones llegan del sitio web, así que apuntan a la fuente de tipo "Web".
+    // El CSV no trae clasificación, se deriva del Rating con el mismo criterio de las
+    // encuestas (1-2 Negativa, 3 Neutra, 4-5 Positiva).
     protected override async Task ResolveForeignKeysAsync(List<Opinion> entities, List<WebReviewDto> dtos)
     {
         var clientes = (await Context.Cliente.Select(c => c.IdCliente).ToListAsync()).ToHashSet();
         var productos = (await Context.Producto.Select(p => p.IdProducto).ToListAsync()).ToHashSet();
+        var idFuente = await OpinionHelper.ResolverIdFuenteAsync(Context, "Web");
+        var clasificaciones = await Context.Clasificacion
+            .ToDictionaryAsync(c => c.Nombre, c => c.IdClasificacion);
 
         for (int i = 0; i < entities.Count; i++)
         {
             entities[i].IdCliente = OpinionHelper.ResolverId(dtos[i].IdCliente, clientes);
             entities[i].IdProducto = OpinionHelper.ResolverId(dtos[i].IdProducto, productos);
-            entities[i].IdFuente = null;
+            entities[i].IdFuente = idFuente;
+
+            var nombre = OpinionHelper.ClasificacionPorPuntaje(entities[i].PuntajeSatisfaccion);
+            entities[i].IdClasificacion =
+                nombre is not null && clasificaciones.TryGetValue(nombre, out var idc) ? idc : null;
         }
     }
 

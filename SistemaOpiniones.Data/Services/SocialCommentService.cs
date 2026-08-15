@@ -20,16 +20,20 @@ public class SocialCommentService : BaseService<SocialCommentDto, Opinion>, ISoc
 
     // IdCliente/IdProducto vienen como texto ("C019", "P003"). Se parsean y, si el
     // registro existe, se asigna; si no, queda en null (la FK es opcional).
+    // La columna Fuente trae la red social (Instagram, Twitter, Facebook), así que
+    // todas estas opiniones apuntan a la fuente de tipo "Red Social".
+    // No hay puntaje ni clasificación en el origen: quedan en null.
     protected override async Task ResolveForeignKeysAsync(List<Opinion> entities, List<SocialCommentDto> dtos)
     {
         var clientes = (await Context.Cliente.Select(c => c.IdCliente).ToListAsync()).ToHashSet();
         var productos = (await Context.Producto.Select(p => p.IdProducto).ToListAsync()).ToHashSet();
+        var idFuente = await OpinionHelper.ResolverIdFuenteAsync(Context, "Red Social");
 
         for (int i = 0; i < entities.Count; i++)
         {
             entities[i].IdCliente = OpinionHelper.ResolverId(dtos[i].IdCliente, clientes);
             entities[i].IdProducto = OpinionHelper.ResolverId(dtos[i].IdProducto, productos);
-            entities[i].IdFuente = null;
+            entities[i].IdFuente = idFuente;
         }
     }
 

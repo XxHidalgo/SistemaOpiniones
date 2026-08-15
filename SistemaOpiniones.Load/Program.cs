@@ -9,31 +9,40 @@ using var host = AppHost.CreateHost(args);
 using var scope = host.Services.CreateScope();
 var sp = scope.ServiceProvider;
 
-// Limpia las tablas para poder re-ejecutar la carga completa.
+// Con --solo-hechos se recarga únicamente la tabla de hechos y las
+// dimensiones se dejan como están.
+bool soloHechos = args.Contains("--solo-hechos", StringComparer.OrdinalIgnoreCase);
+
+// Limpia las tablas para poder re-ejecutar la carga.
 var db = sp.GetRequiredService<SistemaOpinionesContext>();
-await LimpiarBaseDatos(db);
-Console.WriteLine("Base de datos limpiada.\n");
+await LimpiarDataWarehouse(db, soloHechos);
+Console.WriteLine(soloHechos
+    ? "Tabla de hechos limpiada (dimensiones intactas).\n"
+    : "Data Warehouse limpiado (hechos y dimensiones).\n");
 
-// Catálogos primero, porque son FK de las demás tablas.
-var categoria = sp.GetRequiredService<ICategoriaService>();
-await Ejecutar("Categoria", categoria.LoadCategoria, categoria.SaveCategoria);
+if (!soloHechos)
+{
+    // Catálogos primero, porque son FK de las demás tablas.
+    var categoria = sp.GetRequiredService<ICategoriaService>();
+    await Ejecutar("Categoria", categoria.LoadCategoria, categoria.SaveCategoria);
 
-var tipoFuente = sp.GetRequiredService<ITipoFuenteService>();
-await Ejecutar("TipoFuente", tipoFuente.LoadTipoFuente, tipoFuente.SaveTipoFuente);
+    var tipoFuente = sp.GetRequiredService<ITipoFuenteService>();
+    await Ejecutar("TipoFuente", tipoFuente.LoadTipoFuente, tipoFuente.SaveTipoFuente);
 
-var clasificacion = sp.GetRequiredService<IClasificacionService>();
-await Ejecutar("Clasificacion", clasificacion.LoadClasificacion, clasificacion.SaveClasificacion);
+    var clasificacion = sp.GetRequiredService<IClasificacionService>();
+    await Ejecutar("Clasificacion", clasificacion.LoadClasificacion, clasificacion.SaveClasificacion);
 
-var cliente = sp.GetRequiredService<IClienteService>();
-await Ejecutar("Cliente", cliente.LoadCliente, cliente.SaveCliente);
+    var cliente = sp.GetRequiredService<IClienteService>();
+    await Ejecutar("Cliente", cliente.LoadCliente, cliente.SaveCliente);
 
-var producto = sp.GetRequiredService<IProductoService>();
-await Ejecutar("Producto", producto.LoadProducto, producto.SaveProducto);
+    var producto = sp.GetRequiredService<IProductoService>();
+    await Ejecutar("Producto", producto.LoadProducto, producto.SaveProducto);
 
-var fuenteDatos = sp.GetRequiredService<IFuenteDatosService>();
-await Ejecutar("FuenteDatos", fuenteDatos.LoadFuenteDatos, fuenteDatos.SaveFuenteDatos);
+    var fuenteDatos = sp.GetRequiredService<IFuenteDatosService>();
+    await Ejecutar("FuenteDatos", fuenteDatos.LoadFuenteDatos, fuenteDatos.SaveFuenteDatos);
+}
 
-// Las 3 fuentes de opiniones van a la misma tabla Opinion.
+// Las 3 fuentes de opiniones van a la misma tabla de hechos Opinion.
 var social = sp.GetRequiredService<ISocialCommentService>();
 await Ejecutar("Opinion (Social)", social.LoadSocialComment, social.SaveSocialComment);
 
@@ -43,22 +52,9 @@ await Ejecutar("Opinion (Web)", web.LoadWebReview, web.SaveWebReview);
 var survey = sp.GetRequiredService<ISurveyService>();
 await Ejecutar("Opinion (Survey)", survey.LoadSurvey, survey.SaveSurvey);
 
-static async Task LimpiarBaseDatos(SistemaOpinionesContext db)
-{
-    await db.Database.ExecuteSqlRawAsync(@"
-        DELETE FROM dbo.Opinion;
-        DELETE FROM dbo.Producto;
-        DELETE FROM dbo.FuenteDatos;
-        DELETE FROM dbo.Cliente;
-        DELETE FROM dbo.Categoria;
-        DELETE FROM dbo.TipoFuente;
-        DELETE FROM dbo.Clasificacion;
-        DBCC CHECKIDENT ('dbo.Opinion', RESEED, 0);
-        DBCC CHECKIDENT ('dbo.Categoria', RESEED, 0);
-        DBCC CHECKIDENT ('dbo.TipoFuente', RESEED, 0);
-        DBCC CHECKIDENT ('dbo.Clasificacion', RESEED, 0);
-    ");
-}
+static Task LimpiarDataWarehouse(SistemaOpinionesContext db, bool soloHechos)
+    => db.Database.ExecuteSqlRawAsync(
+        "EXEC dbo.usp_LimpiarDataWarehouse @SoloHechos = {0}", soloHechos ? 1 : 0);
 
 static async Task Ejecutar(string nombre, Func<Task<OperationResult>> load, Func<Task<OperationResult>> save)
 {

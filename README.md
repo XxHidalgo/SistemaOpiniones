@@ -20,6 +20,16 @@ dotnet run --project SistemaOpiniones.Etl
 Por defecto corre una sola vez y el staging va a archivos NDJSON en
 `SistemaOpiniones.Etl/output/staging/`. Los logs quedan en `SistemaOpiniones.Etl/logs/`.
 
+Para la carga al modelo analítico:
+
+```bash
+dotnet run --project SistemaOpiniones.Load                  # dimensiones y hechos
+dotnet run --project SistemaOpiniones.Load -- --solo-hechos # solo la tabla de hechos
+```
+
+Ambos modos empiezan llamando a `dbo.usp_LimpiarDataWarehouse`, que vacía las tablas
+antes de cargarlas para que la ejecución se pueda repetir.
+
 ## Base de datos
 
 Ejecutar en orden en SQL Server (están en `SistemaOpiniones.Etl/Sql/`):

@@ -20,10 +20,12 @@ public class SurveyService : BaseService<SurveyDto, Opinion>, ISurveyService
 
     // IdCliente/IdProducto son numéricos pero pueden estar fuera de rango -> null si no existen.
     // Clasificacion viene como texto ("Neutra") -> se resuelve a su IdClasificacion.
+    // Las encuestas se reciben en archivo, así que apuntan a la fuente de tipo "CSV".
     protected override async Task ResolveForeignKeysAsync(List<Opinion> entities, List<SurveyDto> dtos)
     {
         var clientes = (await Context.Cliente.Select(c => c.IdCliente).ToListAsync()).ToHashSet();
         var productos = (await Context.Producto.Select(p => p.IdProducto).ToListAsync()).ToHashSet();
+        var idFuente = await OpinionHelper.ResolverIdFuenteAsync(Context, "CSV");
         var clasificaciones = await Context.Clasificacion
             .ToDictionaryAsync(c => c.Nombre, c => c.IdClasificacion);
 
@@ -31,7 +33,7 @@ public class SurveyService : BaseService<SurveyDto, Opinion>, ISurveyService
         {
             entities[i].IdCliente = clientes.Contains(dtos[i].IdCliente) ? dtos[i].IdCliente : null;
             entities[i].IdProducto = productos.Contains(dtos[i].IdProducto) ? dtos[i].IdProducto : null;
-            entities[i].IdFuente = null;
+            entities[i].IdFuente = idFuente;
 
             entities[i].IdClasificacion =
                 dtos[i].Clasificacion is not null && clasificaciones.TryGetValue(dtos[i].Clasificacion!, out var idc)

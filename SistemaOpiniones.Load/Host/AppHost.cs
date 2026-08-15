@@ -5,6 +5,7 @@ using SistemaOpiniones.Data.Mappings;
 using SistemaOpiniones.Data.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 
 namespace SistemaOpiniones.Load;
@@ -17,6 +18,10 @@ public static class AppHost
             .ConnectionStrings["SistemaOpinionesDb"].ConnectionString;
 
         return Host.CreateDefaultBuilder(args)
+            // EF Core registra cada comando SQL en consola y tapa el resumen de la
+            // carga; se deja solo a partir de advertencias.
+            .ConfigureLogging(logging =>
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning))
             .ConfigureServices((context, services) =>
             {
                 services.AddDbContext<SistemaOpinionesContext>(options =>

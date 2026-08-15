@@ -137,3 +137,83 @@ BEGIN
     VALUES (@IdFuente, @IdTipoFuente, @FechaCarga);
 END
 GO
+
+-- ============================================================
+-- Procesos de limpieza previos a la carga
+-- ============================================================
+
+-- Vacía la tabla de hechos y reinicia su identity, para que una
+-- recarga vuelva a numerar las opiniones desde 1.
+CREATE PROCEDURE dbo.usp_LimpiarHechos
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @Filas INT = (SELECT COUNT(*) FROM dbo.Opinion);
+
+    DELETE FROM dbo.Opinion;
+    DBCC CHECKIDENT ('dbo.Opinion', RESEED, 0) WITH NO_INFOMSGS;
+
+    SELECT 'Opinion' AS Tabla, @Filas AS FilasEliminadas;
+END
+GO
+
+-- Vacía las dimensiones. Se borran en orden inverso a las FK
+-- (primero las que dependen de otras) para no violar restricciones.
+-- Requiere que los hechos ya estén limpios.
+CREATE PROCEDURE dbo.usp_LimpiarDimensiones
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM dbo.Opinion)
+    BEGIN
+        RAISERROR ('No se pueden limpiar las dimensiones: la tabla de hechos Opinion todavía tiene filas. Ejecute dbo.usp_LimpiarHechos primero.', 16, 1);
+        RETURN;
+    END
+
+    DECLARE @Conteos TABLE (Tabla SYSNAME, FilasEliminadas INT);
+
+    INSERT INTO @Conteos
+    SELECT 'Producto',      COUNT(*) FROM dbo.Producto
+    UNION ALL SELECT 'FuenteDatos',   COUNT(*) FROM dbo.FuenteDatos
+    UNION ALL SELECT 'Cliente',       COUNT(*) FROM dbo.Cliente
+    UNION ALL SELECT 'Categoria',     COUNT(*) FROM dbo.Categoria
+    UNION ALL SELECT 'TipoFuente',    COUNT(*) FROM dbo.TipoFuente
+    UNION ALL SELECT 'Clasificacion', COUNT(*) FROM dbo.Clasificacion;
+
+    DELETE FROM dbo.Producto;
+    DELETE FROM dbo.FuenteDatos;
+    DELETE FROM dbo.Cliente;
+    DELETE FROM dbo.Categoria;
+    DELETE FROM dbo.TipoFuente;
+    DELETE FROM dbo.Clasificacion;
+
+    DBCC CHECKIDENT ('dbo.Categoria',     RESEED, 0) WITH NO_INFOMSGS;
+    DBCC CHECKIDENT ('dbo.TipoFuente',    RESEED, 0) WITH NO_INFOMSGS;
+    DBCC CHECKIDENT ('dbo.Clasificacion', RESEED, 0) WITH NO_INFOMSGS;
+
+    SELECT Tabla, FilasEliminadas FROM @Conteos;
+END
+GO
+
+-- Punto de entrada que usa la aplicación de carga.
+-- @SoloHechos = 1 limpia únicamente la tabla de hechos y deja las
+-- dimensiones intactas (recarga incremental de hechos).
+CREATE PROCEDURE dbo.usp_LimpiarDataWarehouse
+    @SoloHechos BIT = 0
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRANSACTION;
+
+    EXEC dbo.usp_LimpiarHechos;
+
+    IF @SoloHechos = 0
+        EXEC dbo.usp_LimpiarDimensiones;
+
+    COMMIT TRANSACTION;
+END
+GO
